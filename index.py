@@ -11,7 +11,8 @@ from PyQt5.QtWidgets import (
     QLabel,
     QMessageBox,
     QLineEdit,
-    QDesktopWidget
+    QDesktopWidget,
+    QProgressDialog
 )
 from PyQt5.QtGui import QIcon
 from expasy import *
@@ -48,7 +49,7 @@ class SubApp(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
-        self.sheet_name = 'seq'
+        self.sheet_name = 'FRONT'
         
     def initUI(self):
         # 1. WIDGET
@@ -115,13 +116,41 @@ class SubApp(QWidget):
         self.setLayout(vbox)
         
     def openFile(self):
-        print('open')
+        url, _ = QFileDialog.getOpenFileName(
+            caption='Select One File',
+            directory='./',
+            filter="excel(*.xlsx)"
+        )
+        
+        if not url:
+            pass
+        else:
+            self.open_lineedit.setText(url)
+            self.open_lineedit.setReadOnly(True)
+            
+            self.change_label.setText('Ready To Create Excel File')
+            self.change_label.setStyleSheet(
+                "color: #332200;"
+                "padding: 5px;"
+                "font-weight: bold;"
+                "background-color: #ffaa00;"
+                )
+        
     def createFile(self):
+        
         print('create')
+        pb = ProgressApp()
         
         
-        
-        
+class ProgressApp(QProgressDialog):
+    
+        def __init__(self):
+            super().__init__()
+            self.show()
+            
+            time.sleep(10)
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     first = MainApp()

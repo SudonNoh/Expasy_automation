@@ -43,4 +43,7 @@ class ExcelControl:
 
     def excel_read(self, url, sheet_name):
         excel_data = pd.read_excel(url, sheet_name=sheet_name)
-        return excel_data.values.tolist()
+        data = excel_data.drop(data.index[0:3])
+        data = [[data.columns[8]]].dropna(axis=0)
+        seq = [j for i in data.values.tolist() for j in i]
+        return seq

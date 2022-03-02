@@ -9,7 +9,8 @@ site_route = 'https://web.expasy.org/protparam'
 
 ec = ExcelControl()
 
-data = ec.excel_read(url=file_route, sheet_name=sheet)
+data = pd.read_excel(file_route, sheet_name=sheet)
+data = data.values.tolist()
 
 sc = SeleniumControl()
 
@@ -18,17 +19,24 @@ sc.time_sleep(3)
 
 expasy_data = []
 for i in data:
-    temp_data = []
     sc.input_seq(i[1])
     sc.time_sleep(5)
     data_text = sc.get_body()
-    temp_data = [i[0], data_text]
-    expasy_data.append(temp_data)
+    expasy_data.append(data_text)
     print(expasy_data)
     sc.site_back()
     sc.time_sleep(5)
 
 sc.site_close()
 
-df = pd.DataFrame(expasy_data)
-df.to_excel('D:/Expasy/excel/TEST2.xlsx')
+string = ''
+for i in expasy_data:
+    string += i + '\n\n'
+    
+string2 = string.split(sep='\n')
+print(string2)
+
+df = pd.DataFrame(string2)
+
+with pd.ExcelWriter('D:/Expasy/excel/TEST.xlsx', mode='w', engine='openpyxl') as writer:
+    df.to_excel(writer, sheet_name='update', index=False, header=False)
