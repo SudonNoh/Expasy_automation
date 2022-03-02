@@ -4,7 +4,6 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 import pandas as pd
-import time
 
 
 class SeleniumControl:
@@ -13,10 +12,10 @@ class SeleniumControl:
         self.options = webdriver.ChromeOptions()
         self.options.add_argument('windows-size=800,1000')
         self.driver = webdriver.Chrome(service=self.chrome_service, options=self.options)
-        self.driver.implicitly_wait(5)
 
     def site_enter(self, url):
         self.driver.get(url=url)
+        self.driver.implicitly_wait(5)
 
     def input_seq(self, seq):
         self.search = self.driver.find_element(By.XPATH, '//*[@id="sib_body"]/form/textarea')
@@ -43,7 +42,19 @@ class ExcelControl:
 
     def excel_read(self, url, sheet_name):
         excel_data = pd.read_excel(url, sheet_name=sheet_name)
-        data = excel_data.drop(data.index[0:3])
-        data = [[data.columns[8]]].dropna(axis=0)
+        data = excel_data.drop(excel_data.index[0:3])
+        data = data[[data.columns[8]]].dropna(axis=0)
         seq = [j for i in data.values.tolist() for j in i]
+        # sequence list로 추출
         return seq
+    
+    def make_excel_file(self, data_list, url, sheet_name):
+        string = ''
+        for i in data_list:
+            string += i+'\n\n'
+            
+        data_list = string.split('\n')
+        df = pd.DataFrame(data_list)
+        
+        with pd.ExcelWriter(url, mode='a', engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name=sheet_name, index=False, header=False)

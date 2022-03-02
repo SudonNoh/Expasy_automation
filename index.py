@@ -1,5 +1,6 @@
 import os
 import sys
+from warnings import WarningMessage
 from PyQt5.QtWidgets import (
     QApplication,
     QWidget,
@@ -16,6 +17,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QIcon
 from expasy import *
+import time
 
 class MainApp(QMainWindow):
     
@@ -49,7 +51,6 @@ class SubApp(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
-        self.sheet_name = 'FRONT'
         
     def initUI(self):
         # 1. WIDGET
@@ -121,6 +122,7 @@ class SubApp(QWidget):
             directory='./',
             filter="excel(*.xlsx)"
         )
+        print(url)
         
         if not url:
             pass
@@ -138,17 +140,56 @@ class SubApp(QWidget):
         
     def createFile(self):
         
-        print('create')
-        pb = ProgressApp()
+        # pb = ProgressApp()
+        self.ec = ExcelControl()
+        self.sc = SeleniumControl()
         
+        self.file_url = self.open_lineedit.text()
+        self.sheet_name = 'FRONT'
+        self.site_route = 'https://web.expasy.org/protparam'
         
-class ProgressApp(QProgressDialog):
-    
-        def __init__(self):
-            super().__init__()
-            self.show()
+        self.sc.site_enter(self.site_route)
+        seq_data = self.ec.excel_read(url=self.file_url, sheet_name=self.sheet_name)
+        self.sc.time_sleep(3)
+        
+        data_list = []
+        for i in seq_data:
+            self.sc.input_seq(i)
+            self.sc.time_sleep(5)
+            data_text = self.sc.get_body()
+            self.data_list.append(data_text)
+            self.sc.site_back()
+            self.sc.time_sleep(5)
+        
+        self.sc.site_close()
+        
+        try:
+            self.ec.make_excel_file(data_list=data_list, url=self.file_url, sheet_name='ExpasyProParam')
+        except PermissionError:
+            self.Warning_event
             
-            time.sleep(10)
+    def Warning_event(self):
+        buttonReply = QMessageBox.warning(
+                        self, 
+                        self.file_url+'\n 위 파일을 닫아주세요.', 
+                        QMessageBox.Yes | QMessageBox.No,
+                        QMessageBox.Yes
+                        )
+        
+        if buttonReply == QMessageBox.Yes:
+            self.ec.make_excel_file(data_list=self.data_list, url=self.file_url, sheet_name='ExpasyProParam')
+        
+        else:
+            pass
+            
+            
+# class ProgressApp(QProgressDialog):
+    
+#         def __init__(self):
+#             super().__init__()
+#             self.show()
+            
+#             time.sleep(10)
 
 
 if __name__ == '__main__':
