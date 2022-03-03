@@ -1,14 +1,16 @@
+from openpyxl import Workbook, load_workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-
+from datetime import date
 import pandas as pd
 
 
 class SeleniumControl:
-    def __init__(self):
-        self.chrome_service = Service(ChromeDriverManager().install())
+    def __init__(self, version):
+        self.chrome_service = Service(ChromeDriverManager(version=version).install())
         self.options = webdriver.ChromeOptions()
         self.options.add_argument('windows-size=800,1000')
         self.driver = webdriver.Chrome(service=self.chrome_service, options=self.options)
@@ -29,7 +31,6 @@ class SeleniumControl:
 
     def time_sleep(self, sec):
         self.driver.implicitly_wait(sec)
-        # time.sleep(sec)
 
     def site_back(self):
         self.driver.back()
@@ -56,5 +57,16 @@ class ExcelControl:
         data_list = string.split('\n')
         df = pd.DataFrame(data_list)
         
-        with pd.ExcelWriter(url, mode='a', engine='openpyxl') as writer:
-            df.to_excel(writer, sheet_name=sheet_name, index=False, header=False)
+        wb = Workbook()
+        # wb.create_sheet(title=sheet_name)
+        ws = wb['Sheet']
+        ws.title = sheet_name
+        
+        for r in dataframe_to_rows(df, index=False, header=False):
+            ws.append(r)
+        
+        new_url = url[:-5] + '_' + date.today().strftime('%y%m%d') + '.xlsx'
+        
+        wb.save(filename='D:/Expasy/excel/file.xlsx')
+        
+        

@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon
 from expasy import *
 import time
+import selenium.common.exceptions
 
 class MainApp(QMainWindow):
     
@@ -69,6 +70,11 @@ class SubApp(QWidget):
         self.open_btn.setMaximumWidth(100)
         self.btn.setMaximumWidth(100)
         
+        # 4) Chrome Version
+        self.chrome_label = QLabel('Chrome Version: ')
+        self.chrome_lineedit = QLineEdit()
+        self.chrome_lineedit.setText("98.0.4758.102")
+        
         # 2. widget's style
         self.change_label.setStyleSheet(
             "color: #0d3300;"
@@ -87,6 +93,7 @@ class SubApp(QWidget):
         hbox2 = QHBoxLayout()
         hbox3 = QHBoxLayout()
         hbox4 = QHBoxLayout()
+        hbox5 = QHBoxLayout()
         
         hbox1.addStretch(1)
         hbox1.addWidget(self.open_label)
@@ -105,6 +112,11 @@ class SubApp(QWidget):
         hbox4.addWidget(self.btn)
         hbox4.addStretch(1)
         
+        hbox5.addStretch(1)
+        hbox5.addWidget(self.chrome_label)
+        hbox5.addWidget(self.chrome_lineedit)
+        hbox5.addStretch(1)
+        
         vbox.addStretch(2)
         vbox.addLayout(hbox1)
         vbox.addLayout(hbox2)
@@ -112,6 +124,7 @@ class SubApp(QWidget):
         vbox.addLayout(hbox3)
         vbox.addStretch(1)
         vbox.addLayout(hbox4)
+        vbox.addLayout(hbox5)
         vbox.addStretch(2)
         
         self.setLayout(vbox)
@@ -122,7 +135,6 @@ class SubApp(QWidget):
             directory='./',
             filter="excel(*.xlsx)"
         )
-        print(url)
         
         if not url:
             pass
@@ -142,39 +154,58 @@ class SubApp(QWidget):
         
         # pb = ProgressApp()
         self.ec = ExcelControl()
-        self.sc = SeleniumControl()
-        
-        self.file_url = self.open_lineedit.text()
-        self.sheet_name = 'FRONT'
-        self.site_route = 'https://web.expasy.org/protparam'
-        
-        self.sc.site_enter(self.site_route)
-        seq_data = self.ec.excel_read(url=self.file_url, sheet_name=self.sheet_name)
-        self.sc.time_sleep(3)
-        
-        data_list = []
-        for i in seq_data:
-            self.sc.input_seq(i)
-            self.sc.time_sleep(5)
-            data_text = self.sc.get_body()
-            self.data_list.append(data_text)
-            self.sc.site_back()
-            self.sc.time_sleep(5)
-        
-        self.sc.site_close()
-        
         try:
-            self.ec.make_excel_file(data_list=data_list, url=self.file_url, sheet_name='ExpasyProParam')
-        except PermissionError:
-            self.Warning_event
+            self.sc = SeleniumControl(version=self.chrome_lineedit.text())
+            self.file_url = self.open_lineedit.text()
+            self.sheet_name = 'FRONT'
+            self.site_route = 'https://web.expasy.org/protparam'
             
+            self.sc.site_enter(self.site_route)
+            seq_data = self.ec.excel_read(
+                url=self.file_url, 
+                sheet_name=self.sheet_name
+                )
+            
+            self.sc.time_sleep(3)
+            self.data_list = []
+            for i in seq_data:
+                self.sc.input_seq(i)
+                self.sc.time_sleep(5)
+                data_text = self.sc.get_body()
+                self.data_list.append(data_text)
+                self.sc.site_back()
+                self.sc.time_sleep(5)
+            
+            self.sc.site_close()
+            
+            try:
+                self.ec.make_excel_file(data_list=self.data_list, url=self.file_url, sheet_name='ExpasyProParam')
+            except PermissionError:
+                self.Warning_event()
+        except selenium.common.exceptions.SessionNotCreatedException:
+            QMessageBox.warning(
+                self, 
+                'Version Error', 
+                'Chrome Version을 확인하신 후\n "Chrome Version: "칸에 입력해주세요.'
+                )
+        except ValueError:
+            QMessageBox.warning(
+                self,
+                'Version Error',
+                'Version을 확인해주세요.'
+            )
+        
+    # event 부분 수정
     def Warning_event(self):
+        print(self.file_url+'위 파일을 닫아주세요')
+        
         buttonReply = QMessageBox.warning(
-                        self, 
-                        self.file_url+'\n 위 파일을 닫아주세요.', 
-                        QMessageBox.Yes | QMessageBox.No,
-                        QMessageBox.Yes
-                        )
+            self,
+            'title',
+            self.file_url+'\n 위 파일을 닫아주세요.', 
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes
+            )
         
         if buttonReply == QMessageBox.Yes:
             self.ec.make_excel_file(data_list=self.data_list, url=self.file_url, sheet_name='ExpasyProParam')
