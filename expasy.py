@@ -6,7 +6,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import date
 import pandas as pd
-
+import os
 
 class SeleniumControl:
     def __init__(self, version):
@@ -64,9 +64,20 @@ class ExcelControl:
         
         for r in dataframe_to_rows(df, index=False, header=False):
             ws.append(r)
+            
+        today = date.today().strftime('%y%m%d')
         
-        new_url = url[:-5] + '_' + date.today().strftime('%y%m%d') + '.xlsx'
+        folder = url[:url.rfind("/")]
+        file_list = os.listdir(folder)
         
-        wb.save(filename='D:/Expasy/excel/file.xlsx')
+        count = 0
+        if url[url.rfind("/")+1:] in file_list:
+            for i in file_list:
+                if today in i:
+                    count += 1
+        count += 1        
+        
+        new_url = url[:-5] + '_' + today + '(' + str(count) + ')' + '.xlsx'
+        wb.save(filename=new_url)
         
         

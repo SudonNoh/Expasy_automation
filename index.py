@@ -161,44 +161,77 @@ class SubApp(QWidget):
             self.site_route = 'https://web.expasy.org/protparam'
             
             self.sc.site_enter(self.site_route)
-            seq_data = self.ec.excel_read(
-                url=self.file_url, 
-                sheet_name=self.sheet_name
-                )
-            
-            self.sc.time_sleep(3)
-            self.data_list = []
-            for i in seq_data:
-                self.sc.input_seq(i)
-                self.sc.time_sleep(5)
-                data_text = self.sc.get_body()
-                self.data_list.append(data_text)
-                self.sc.site_back()
-                self.sc.time_sleep(5)
-            
-            self.sc.site_close()
             
             try:
-                self.ec.make_excel_file(data_list=self.data_list, url=self.file_url, sheet_name='ExpasyProParam')
-            except PermissionError:
-                self.Warning_event()
+                if not 'Expasy' in self.file_url:
+                    raise ValueError
+                
+                self.seq_data = self.ec.excel_read(
+                    url=self.file_url, 
+                    sheet_name=self.sheet_name
+                    )
+                
+                self.sc.time_sleep(3)
+                self.data_list = []
+
+                if not self.seq_data:
+                    raise ValueError
+                
+                for i in self.seq_data:
+                    self.sc.input_seq(i)
+                    self.sc.time_sleep(5)
+                    data_text = self.sc.get_body()
+                    self.data_list.append(data_text)
+                    self.sc.site_back()
+                    self.sc.time_sleep(5)
+                self.sc.site_close()
+                
+                try:
+                    self.ec.make_excel_file(
+                        data_list=self.data_list, 
+                        url=self.file_url, 
+                        sheet_name='ExpasyProParam'
+                        )
+                    
+                    self.change_label.setText('Open File to Create Excel File')
+                    self.change_label.setStyleSheet(
+                        "color: #0d3300;"
+                        "padding: 5px;"
+                        "font-weight: bold;"
+                        "background-color: #53ff1a;"
+                        )
+                    
+                    self.open_lineedit.setText('')
+                    QMessageBox.information(self, 'Created', 'Complete !')
+                            
+                except PermissionError:
+                    self.Warning_event()
+                
+            except ValueError:
+                self.sc.site_close()
+                
+                QMessageBox.warning(
+                    self,
+                    'Value Error',
+                    '파일이 맞는지 확인해주세요.'
+                )
+                
         except selenium.common.exceptions.SessionNotCreatedException:
             QMessageBox.warning(
                 self, 
                 'Version Error', 
                 'Chrome Version을 확인하신 후\n "Chrome Version: "칸에 입력해주세요.'
                 )
+            
         except ValueError:
             QMessageBox.warning(
                 self,
                 'Version Error',
-                'Version을 확인해주세요.'
+                'Chrome Version을 확인해주세요.'
             )
         
     # event 부분 수정
     def Warning_event(self):
-        print(self.file_url+'위 파일을 닫아주세요')
-        
         buttonReply = QMessageBox.warning(
             self,
             'title',
@@ -209,7 +242,16 @@ class SubApp(QWidget):
         
         if buttonReply == QMessageBox.Yes:
             self.ec.make_excel_file(data_list=self.data_list, url=self.file_url, sheet_name='ExpasyProParam')
-        
+            self.change_label.setText('Open File to Create Excel File')
+            self.change_label.setStyleSheet(
+                "color: #0d3300;"
+                "padding: 5px;"
+                "font-weight: bold;"
+                "background-color: #53ff1a;"
+                )
+            
+            self.open_lineedit.setText('')
+            QMessageBox.information(self, 'Created', 'Complete !')
         else:
             pass
             
@@ -221,7 +263,6 @@ class SubApp(QWidget):
 #             self.show()
             
 #             time.sleep(10)
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
