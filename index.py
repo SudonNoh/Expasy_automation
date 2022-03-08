@@ -166,7 +166,12 @@ class SubApp(QWidget):
                 if not 'Expasy' in self.file_url:
                     raise ValueError
                 
-                self.seq_data = self.ec.excel_read(
+                # self.seq_data = self.ec.excel_read(
+                #     url=self.file_url, 
+                #     sheet_name=self.sheet_name
+                #     )
+                
+                self.seq_data, self.seq_id = self.ec.excel_read_2(
                     url=self.file_url, 
                     sheet_name=self.sheet_name
                     )
@@ -187,10 +192,17 @@ class SubApp(QWidget):
                 self.sc.site_close()
                 
                 try:
-                    self.ec.make_excel_file(
+                    # self.ec.make_excel_file(
+                    #     data_list=self.data_list, 
+                    #     url=self.file_url, 
+                    #     sheet_name='ExpasyProParam'
+                    #     )
+                    
+                    self.ec.make_excel_file_2(
                         data_list=self.data_list, 
                         url=self.file_url, 
-                        sheet_name='ExpasyProParam'
+                        sheet_name='ExpasyProParam',
+                        seq_id = self.seq_id
                         )
                     
                     self.change_label.setText('Open File to Create Excel File')
