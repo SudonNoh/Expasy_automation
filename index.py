@@ -142,13 +142,22 @@ class SubApp(QWidget):
             self.open_lineedit.setText(url)
             self.open_lineedit.setReadOnly(True)
             
-            self.change_label.setText('Ready To Create Excel File')
-            self.change_label.setStyleSheet(
-                "color: #332200;"
-                "padding: 5px;"
-                "font-weight: bold;"
-                "background-color: #ffaa00;"
-                )
+            if not 'ExpasyProParam.xlsx' in url:
+                self.change_label.setText('Not Correct File')
+                self.change_label.setStyleSheet(
+                    "color: #FFFFFF;"
+                    "padding: 5px;"
+                    "font-weight: bold;"
+                    "background-color: #E81010;"
+                    )
+            else:
+                self.change_label.setText('Ready To Create Excel File')
+                self.change_label.setStyleSheet(
+                    "color: #332200;"
+                    "padding: 5px;"
+                    "font-weight: bold;"
+                    "background-color: #ffaa00;"
+                    )
         
     def createFile(self):
         

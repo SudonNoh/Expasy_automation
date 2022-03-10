@@ -89,7 +89,7 @@ class ExcelControl:
         for i, j in zip(data_list, seq_id):
             data = []
             data.append(j)
-            data.append(round(float(self.string_slice(i, 'Molecular weight:'))/1000*(len(j)-4), 2))
+            data.append(round(float(self.string_slice(i, 'Molecular weight:'))/1000, 2))
             data.append(self.string_slice(i, 'Theoretical pI:'))
             data.append(self.string_slice(i, 'Abs 0.1% (=1 g/l)'))
             data_frame_list.append(data)
