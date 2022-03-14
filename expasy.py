@@ -115,17 +115,23 @@ class ExcelControl:
     def make_new_url(self, url):
         
         today = date.today().strftime('%y%m%d')
+        print('today : ', today)
         
         folder = url[:url.rfind("/")]
         file_list = os.listdir(folder)
         
-        count = 0
+        count = 1
         if url[url.rfind("/")+1:] in file_list:
+            print('file list !!:', file_list)
             for i in file_list:
+                print('i !! : ', i)
                 if today in i:
                     count += 1
-        count += 1        
+                    print('count !!:', count)
+        else:
+            count = 1
         
+        print('마지막 Count : ', count)
         new_url = url[:-5] + '_' + today + '(' + str(count) + ')' + '.xlsx'
         
         return new_url

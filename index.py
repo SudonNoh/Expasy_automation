@@ -16,9 +16,10 @@ from PyQt5.QtWidgets import (
     QProgressDialog
 )
 from PyQt5.QtGui import QIcon
-from expasy import *
+from expasy import ExcelControl, SeleniumControl
 import time
 import selenium.common.exceptions
+
 
 class MainApp(QMainWindow):
     
