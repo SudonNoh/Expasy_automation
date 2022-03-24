@@ -100,6 +100,9 @@ class ExcelControl:
         
         df.to_excel(new_url, sheet_name=sheet_name, index=False)
         
+        # 이 다음에 make_excel_file을 실행시키는 식으로 ?
+        # 만든 excel 파일을 열어서 다시 붙여넣는 식으로 ?
+        
     def string_slice(self, data, string):
         try:
             str_len = len(string)
