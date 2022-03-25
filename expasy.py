@@ -72,7 +72,7 @@ class ExcelControl:
         df = pd.DataFrame(data_frame_list, columns=['RESULT', 'ID', 'MW', 'PI', 'Abs'])
         new_url = self.make_new_url(url)
         writer = pd.ExcelWriter(new_url, engine='openpyxl')
-        df.to_excel(writer, sheet_name="ExpasyProParam", index=False)
+        df.to_excel(writer, sheet_name="ExpasyProtParam", index=False)
         writer.save()
 
     # 결과값을 String으로 전체를 보여주는 함수

@@ -143,7 +143,7 @@ class SubApp(QWidget):
             self.open_lineedit.setText(url)
             self.open_lineedit.setReadOnly(True)
             
-            if not 'ExpasyProParam_v' in url:
+            if not 'ExpasyProtParam_v' in url:
                 self.change_label.setText('Not Correct File')
                 self.change_label.setStyleSheet(
                     "color: #FFFFFF;"
@@ -201,7 +201,7 @@ class SubApp(QWidget):
                     self.ec.save_excel_file(
                         data_list=self.data_list, 
                         url=self.file_url, 
-                        sheet_name='ExpasyProParam',
+                        sheet_name='ExpasyProtParam',
                         seq_id = self.seq_id
                         )
                     
@@ -253,7 +253,7 @@ class SubApp(QWidget):
             )
         
         if buttonReply == QMessageBox.Yes:
-            self.ec.make_excel_file(data_list=self.data_list, url=self.file_url, sheet_name='ExpasyProParam')
+            self.ec.make_excel_file(data_list=self.data_list, url=self.file_url, sheet_name='ExpasyProtParam')
             self.change_label.setText('Open File to Create Excel File')
             self.change_label.setStyleSheet(
                 "color: #0d3300;"
