@@ -40,15 +40,42 @@ class SeleniumControl:
 
 
 class ExcelControl:
-
-    def excel_read(self, url, sheet_name):
-        excel_data = pd.read_excel(url, sheet_name=sheet_name)
-        data = excel_data.drop(excel_data.index[0:3])
-        data = data[[data.columns[8]]].dropna(axis=0)
-        seq = [j for i in data.values.tolist() for j in i]
-        # sequence list로 추출
-        return seq
     
+    def excel_read(self, url, sheet_name):
+        # excel 불러오기
+        excel_data = pd.read_excel(url, sheet_name=sheet_name)
+        # 비어있는 행 파일 정리
+        data = excel_data.drop(excel_data.index[0:3])
+        # 사용할 열을 추출하고 NA값 제거
+        data1 = data[[data.columns[8]]].dropna(axis=0)
+        data2 = data[[data.columns[7]]].dropna(axis=0)
+        # 데이터 안에 있는 값들을 하나씩 추출해 리스트로 저장
+        seq = [j for i in data1.values.tolist() for j in i]
+        seq_id = [j for i in data2.values.tolist() for j in i]
+        # sequence list로 추출
+        return seq, seq_id
+    
+    def save_excel_file(self, data_list, seq_id, url, sheet_name):
+        
+        # MW, PI, ABS
+        data_frame_list = []
+        for i, j in zip(data_list, seq_id):
+            # MW, PI, ABS
+            data = []
+            data.append(i)
+            data.append(j)
+            data.append(round(float(self.string_slice(i, 'Molecular weight:'))/1000, 2))
+            data.append(self.string_slice(i, 'Theoretical pI:'))
+            data.append(self.string_slice(i, 'Abs 0.1% (=1 g/l)'))
+            data_frame_list.append(data)
+            
+        df = pd.DataFrame(data_frame_list, columns=['RESULT', 'ID', 'MW', 'PI', 'Abs'])
+        new_url = self.make_new_url(url)
+        writer = pd.ExcelWriter(new_url, engine='openpyxl')
+        df.to_excel(writer, sheet_name="ExpasyProParam", index=False)
+        writer.save()
+
+    # 결과값을 String으로 전체를 보여주는 함수
     def make_excel_file(self, data_list, url, sheet_name):
         
         # data list를 불러와서 하나의 string으로 추출
@@ -71,17 +98,7 @@ class ExcelControl:
         
         wb.save(filename=new_url)
         
-    def excel_read_2(self, url, sheet_name):
-        
-        excel_data = pd.read_excel(url, sheet_name=sheet_name)
-        data = excel_data.drop(excel_data.index[0:3])
-        data1 = data[[data.columns[8]]].dropna(axis=0)
-        data2 = data[[data.columns[7]]].dropna(axis=0)
-        seq = [j for i in data1.values.tolist() for j in i]
-        seq_id = [j for i in data2.values.tolist() for j in i]
-        # sequence list로 추출
-        return seq, seq_id
-        
+    # 결과값으로 MW, PI, ABS 를 보여주는 함수
     def make_excel_file_2(self, data_list, url, sheet_name, seq_id):
         
         # MW, PI, ABS
@@ -94,14 +111,22 @@ class ExcelControl:
             data.append(self.string_slice(i, 'Abs 0.1% (=1 g/l)'))
             data_frame_list.append(data)
             
+        # data list를 불러와서 하나의 string으로 추출
+        string = ''
+        for i in data_list:
+            string += i+'\n\n'
+            
+        datas = string.split('\n')
+        
         df = pd.DataFrame(data_frame_list, columns=['ID', 'MW', 'PI', 'Abs'])
+        df2 = pd.DataFrame(datas)
         
         new_url = self.make_new_url(url)
         
-        df.to_excel(new_url, sheet_name=sheet_name, index=False)
-        
-        # 이 다음에 make_excel_file을 실행시키는 식으로 ?
-        # 만든 excel 파일을 열어서 다시 붙여넣는 식으로 ?
+        writer = pd.ExcelWriter(new_url, engine='openpyxl')
+        df.to_excel(writer, sheet_name="MW", index=False)
+        df2.to_excel(writer, sheet_name=sheet_name, index=False)
+        writer.save()
         
     def string_slice(self, data, string):
         try:
@@ -118,23 +143,17 @@ class ExcelControl:
     def make_new_url(self, url):
         
         today = date.today().strftime('%y%m%d')
-        print('today : ', today)
         
         folder = url[:url.rfind("/")]
         file_list = os.listdir(folder)
         
         count = 1
         if url[url.rfind("/")+1:] in file_list:
-            print('file list !!:', file_list)
             for i in file_list:
-                print('i !! : ', i)
                 if today in i:
                     count += 1
-                    print('count !!:', count)
         else:
             count = 1
-        
-        print('마지막 Count : ', count)
-        new_url = url[:-5] + '_' + today + '(' + str(count) + ')' + '.xlsx'
+        new_url = url[:url.rfind('/')+1]+'ExpasyProParam' + '_' + today + '(' + str(count) + ')' + '.xlsx'
         
         return new_url
