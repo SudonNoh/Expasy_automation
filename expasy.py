@@ -47,8 +47,9 @@ class ExcelControl:
         # 비어있는 행 파일 정리
         data = excel_data.drop(excel_data.index[0:3])
         # 사용할 열을 추출하고 NA값 제거
-        data1 = data[[data.columns[8]]].dropna(axis=0)
-        data2 = data[[data.columns[7]]].dropna(axis=0)
+        data = data[[data.columns[7], data.columns[8]]].dropna(axis=0)
+        data1 = data[[data.columns[1]]].dropna(axis=0)
+        data2 = data[[data.columns[0]]].dropna(axis=0)
         # 데이터 안에 있는 값들을 하나씩 추출해 리스트로 저장
         seq = [j for i in data1.values.tolist() for j in i]
         seq_id = [j for i in data2.values.tolist() for j in i]
@@ -134,6 +135,8 @@ class ExcelControl:
             start_num = data.find(string)+str_len
             if 'Abs' in string:
                 export_string = data[start_num:data.find(',', start_num)]
+                if 'Estimatedhalf-life:' in export_string:
+                    export_string = data[start_num:data.find('Estimatedhalf-life:', start_num)]
             else:
                 export_string = data[start_num:data.find('\n', start_num)]
         except:
@@ -154,6 +157,6 @@ class ExcelControl:
                     count += 1
         else:
             count = 1
-        new_url = url[:url.rfind('/')+1]+'ExpasyProParam' + '_' + today + '(' + str(count) + ')' + '.xlsx'
+        new_url = url[:url.rfind('/')+1]+'ExpasyProtParam' + '_' + today + '(' + str(count) + ')' + '.xlsx'
         
         return new_url
